@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.pyc
+
+# Virtual environment
+venv/
+.env
+
+# IDE
+.vscode/
+
+# ChromaDB / vector DB
+chroma/
+*.sqlite
+
+# HuggingFace cache
+.cache/
+
+# Logs
+*.log
