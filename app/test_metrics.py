@@ -1,19 +1,21 @@
-# Copy this test file to your app directory
 """Week 2 Metrics Collection"""
 import chromadb
 import time
 from statistics import mean
 
 def get_metrics():
-    client = chromadb.Client()
-    collection = client.get_or_create_collection(name="meditations_parent_child")
+    # Use the same persistent client as ingestion
+    client = chromadb.PersistentClient(path="./chroma_db")
+    collection = client.get_collection(name="meditations_parent_child")
     
     total_chunks = collection.count()
     
     try:
         all_ids = collection.get()['ids']
-        parents = len([id for id in all_ids if '_parent_' in id and '_child_' not in id])
-        children = len([id for id in all_ids if '_child_' in id])
+        # Count parents: IDs that contain "parent" but not "child" (safe)
+        parents = len([id for id in all_ids if "parent" in id and "child" not in id])
+        # Count children: IDs that contain "child"
+        children = len([id for id in all_ids if "child" in id])
     except:
         parents = children = 0
     
@@ -36,12 +38,20 @@ def get_metrics():
         times.append(elapsed)
         
         if results['distances'][0]:
-            scores.append(mean([1 - d for d in results['distances'][0]]))
-            print(f"  '{q}': {elapsed:.1f}ms, score: {scores[-1]:.3f}")
+            # Cosine distance: similarity = 1 - distance
+            sims = [1 - d for d in results['distances'][0]]
+            avg_sim = mean(sims)
+            scores.append(avg_sim)
+            print(f"  '{q}': {elapsed:.1f}ms, score: {avg_sim:.3f}")
+        else:
+            print(f"  '{q}': {elapsed:.1f}ms, no results found")
     
     print(f"\n✅ RESULTS")
     print(f"  Avg query time: {mean(times):.1f}ms")
-    print(f"  Avg similarity: {mean(scores):.3f}")
+    if scores:
+        print(f"  Avg similarity: {mean(scores):.3f}")
+    else:
+        print("  Avg similarity: N/A (no results returned)")
     print("=" * 60)
 
 if __name__ == "__main__":
