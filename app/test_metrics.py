@@ -4,54 +4,58 @@ import time
 from statistics import mean
 
 def get_metrics():
-    # Use the same persistent client as ingestion
     client = chromadb.PersistentClient(path="./chroma_db")
+    # No embedding_function provided – uses the one stored in the collection
     collection = client.get_collection(name="meditations_parent_child")
     
-    total_chunks = collection.count()
-    
-    try:
-        all_ids = collection.get()['ids']
-        # Count parents: IDs that contain "parent" but not "child" (safe)
-        parents = len([id for id in all_ids if "parent" in id and "child" not in id])
-        # Count children: IDs that contain "child"
-        children = len([id for id in all_ids if "child" in id])
-    except:
-        parents = children = 0
+    total = collection.count()
+    all_ids = collection.get()['ids']
+    parents = len([id for id in all_ids if "parent" in id and "child" not in id])
+    children = len([id for id in all_ids if "child" in id])
     
     print("=" * 60)
     print("WEEK 2: PARENT-CHILD CHUNKING METRICS")
     print("=" * 60)
     print(f"\n📊 DATABASE")
-    print(f"  Total: {total_chunks}")
+    print(f"  Total: {total}")
     print(f"  Parents: {parents}")
     print(f"  Children: {children}")
     
-    queries = ["virtue reason", "stoicism discipline", "mind consciousness"]
-    times, scores = [], []
+    queries = [
+        "What is the role of virtue and reason in Stoic philosophy?",
+        "How does Stoicism define discipline and self-control?",
+        "What does Marcus Aurelius say about mind and consciousness?"
+    ]
     
+    times, best_scores = [], []
     print(f"\n⚡ QUERIES")
     for q in queries:
         start = time.time()
-        results = collection.query(query_texts=[q], n_results=3, include=['distances'])
+        results = collection.query(
+            query_texts=[q],
+            n_results=3,
+            include=['distances', 'documents']
+        )
         elapsed = (time.time() - start) * 1000
         times.append(elapsed)
         
         if results['distances'][0]:
-            # Cosine distance: similarity = 1 - distance
-            sims = [1 - d for d in results['distances'][0]]
-            avg_sim = mean(sims)
-            scores.append(avg_sim)
-            print(f"  '{q}': {elapsed:.1f}ms, score: {avg_sim:.3f}")
+            best_dist = min(results['distances'][0])
+            best_sim = 1 - best_dist
+            best_scores.append(best_sim)
+            print(f"\n  Query: '{q[:60]}...'")
+            print(f"    Best distance: {best_dist:.3f}")
+            print(f"    Best similarity: {best_sim:.3f}")
+            print(f"    Top text (first 150 chars): {results['documents'][0][0][:150]}...")
         else:
-            print(f"  '{q}': {elapsed:.1f}ms, no results found")
+            print(f"  No results for: {q[:30]}")
     
     print(f"\n✅ RESULTS")
     print(f"  Avg query time: {mean(times):.1f}ms")
-    if scores:
-        print(f"  Avg similarity: {mean(scores):.3f}")
+    if best_scores:
+        print(f"  Avg best similarity: {mean(best_scores):.3f}")
     else:
-        print("  Avg similarity: N/A (no results returned)")
+        print("  No scores available.")
     print("=" * 60)
 
 if __name__ == "__main__":
