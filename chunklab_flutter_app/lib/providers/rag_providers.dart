@@ -1,18 +1,21 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../services/rag_service.dart';
-import '../models/query_response.dart';
+import '../models/query_models.dart';  
+// Service provider
+final ragServiceProvider = Provider<RagService>((ref) {
+  return RagService();
+});
 
-final ragServiceProvider = Provider<RagService>((ref) => RagService());
+// Current query text
+final queryTextProvider = StateProvider<String>((ref) => '');
 
-final queryInputProvider = StateProvider<String>((ref) => '');
-
+// Query results (triggered manually, not auto)
 final queryResultsProvider =
-    FutureProvider.autoDispose.family<QueryResponse, String>((ref, query) async {
-  if (query.isEmpty) {
-    throw Exception('Query cannot be empty');
+    FutureProvider.family<QueryResponse, String>((ref, query) async {
+  if (query.trim().isEmpty) {
+    throw 'Please enter a query';
   }
 
- 
   final ragService = ref.watch(ragServiceProvider);
   return ragService.queryDocuments(query: query);
 });
