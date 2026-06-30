@@ -41,8 +41,8 @@ chunklab/
 │   ├── vector_store.py      # ChromaDB + embeddings
 │   ├── chunkers/
 │   │   ├── __init__.py      # Strategy router (add new ones here)
-│   │   ├── fixed_chunker.py         # Week 1 ✅
-│   │   ├── parent_child_chunker.py  # Week 2 (coming)
+│   │   ├── fixed_chunker.py         # Week 1 done
+│   │   ├── parent_child_chunker.py  # Week 2 done
 │   │   ├── semantic_chunker.py      # Week 3 (coming)
 │   │   └── late_chunker.py          # Week 4 (coming)
 │   └── routers/
