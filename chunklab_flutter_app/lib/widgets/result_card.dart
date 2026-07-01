@@ -3,8 +3,13 @@ import '../models/query_models.dart';
 
 class ResultCard extends StatefulWidget {
   final ChunkResult result;
+  final int? index; // optional rank number
 
-  const ResultCard({Key? key, required this.result}) : super(key: key);
+  const ResultCard({
+    Key? key,
+    required this.result,
+    this.index, // <-- make sure this line exists
+  }) : super(key: key);
 
   @override
   State<ResultCard> createState() => _ResultCardState();
@@ -15,12 +20,13 @@ class _ResultCardState extends State<ResultCard> {
 
   @override
   Widget build(BuildContext context) {
-    final score = widget.result.similarityScore;
+    // ✅ use 'similarity' (not 'similarityScore')
+    final score = widget.result.similarityScore; // default to 0 if null
     final scoreColor = score > 0.5
         ? Colors.green
         : score > 0.3
-            ? Colors.orange
-            : Colors.red;
+        ? Colors.orange
+        : Colors.red;
 
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -30,6 +36,22 @@ class _ResultCardState extends State<ResultCard> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Optional rank
+            if (widget.index != null)
+              Row(
+                children: [
+                  Text(
+                    '#${widget.index}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                ],
+              ),
+
             // Similarity badge
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -54,14 +76,11 @@ class _ResultCardState extends State<ResultCard> {
               widget.result.text,
               maxLines: 5,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.5,
-              ),
+              style: const TextStyle(fontSize: 14, height: 1.5),
             ),
             const SizedBox(height: 12),
 
-            // View context button
+            // View context button (only if parentContext exists)
             if (widget.result.parentContext != null)
               SizedBox(
                 width: double.infinity,

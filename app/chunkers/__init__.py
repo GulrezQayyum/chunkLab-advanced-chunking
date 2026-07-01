@@ -1,4 +1,4 @@
-from chunkLab.app.chunkers.semantic_chunker import SemanticChunker
+from .semantic_chunker import SemanticChunker
 from .fixed_chunker import FixedChunker
 from .parent_child_chunker import ParentChildChunker, ParentChildRetriever
 
@@ -15,4 +15,4 @@ def get_chunker(strategy: str):
         raise ValueError(f"Unknown strategy '{strategy}'. Available: {list(CHUNKERS.keys())}")
     return CHUNKERS[strategy]()
 
-__all__ = ['FixedChunker', 'ParentChildChunker', 'ParentChildRetriever', 'get_chunker', 'CHUNKERS', 'SemanticChunker', 'ChunkingMetrics']
+__all__ = ['FixedChunker', 'ParentChildChunker', 'ParentChildRetriever', 'get_chunker', 'CHUNKERS', 'SemanticChunker']

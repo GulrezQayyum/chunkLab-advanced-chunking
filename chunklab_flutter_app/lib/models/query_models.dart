@@ -1,32 +1,29 @@
-// Simple data models WITHOUT Freezed (no build_runner needed)
+/// Models for query responses from the RAG backend.
 
 class ChunkResult {
-  final String chunkId;
+  final String id;          // matches backend 'id'
   final String text;
-  final double similarityScore;
-  final String chunkType;
-  final ParentContext? parentContext;
+  final double similarityScore;  // backend field name is 'similarity'
   final Map<String, dynamic> metadata;
+  final ParentContext? parentContext; // optional, used if backend returns it
 
   ChunkResult({
-    required this.chunkId,
+    required this.id,
     required this.text,
     required this.similarityScore,
-    required this.chunkType,
-    this.parentContext,
     required this.metadata,
+    this.parentContext,
   });
 
   factory ChunkResult.fromJson(Map<String, dynamic> json) {
     return ChunkResult(
-      chunkId: json['chunk_id'] ?? '',
+      id: json['id'] ?? '',
       text: json['text'] ?? '',
-      similarityScore: (json['similarity_score'] ?? 0).toDouble(),
-      chunkType: json['chunk_type'] ?? '',
+      similarityScore: (json['similarity'] ?? 0).toDouble(),
+      metadata: json['metadata'] ?? {},
       parentContext: json['parent_context'] != null
           ? ParentContext.fromJson(json['parent_context'])
           : null,
-      metadata: json['metadata'] ?? {},
     );
   }
 }
@@ -35,7 +32,10 @@ class ParentContext {
   final String text;
   final Map<String, dynamic> metadata;
 
-  ParentContext({required this.text, required this.metadata});
+  ParentContext({
+    required this.text,
+    required this.metadata,
+  });
 
   factory ParentContext.fromJson(Map<String, dynamic> json) {
     return ParentContext(
@@ -46,28 +46,27 @@ class ParentContext {
 }
 
 class QueryResponse {
+  final String strategy;
   final String query;
   final List<ChunkResult> results;
-  final String strategy;
-  final int totalResults; // 👈 added from backend
-  final Map<String, dynamic>? metrics; // 👈 now a map, optional
+  final int totalResults;
+  final Map<String, dynamic>? metrics; // optional, contains avg_similarity etc.
 
   QueryResponse({
+    required this.strategy,
     required this.query,
     required this.results,
-    required this.strategy,
     required this.totalResults,
     this.metrics,
   });
 
-  
   factory QueryResponse.fromJson(Map<String, dynamic> json) {
     return QueryResponse(
+      strategy: json['strategy'] ?? '',
       query: json['query'] ?? '',
       results: (json['results'] as List<dynamic>?)
               ?.map((e) => ChunkResult.fromJson(e as Map<String, dynamic>))
               .toList() ?? [],
-      strategy: json['strategy'] ?? '',
       totalResults: json['total_results'] ?? 0,
       metrics: json['metrics'] as Map<String, dynamic>?, // may be null
     );
