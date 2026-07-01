@@ -6,3 +6,6 @@ sentence-transformers
 groq
 pymupdf
 python-dotenv
+nltk
+sentence-transformers
+numpy

@@ -12,10 +12,14 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ChunkLab',
+      debugShowCheckedModeBanner: false,
+      title: 'ChunkLab RAG',
       theme: ThemeData(
-        primarySwatch: Colors.purple,
         useMaterial3: true,
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: Colors.purple,
+          brightness: Brightness.light,
+        ),
       ),
       home: const HomePage(),
     );

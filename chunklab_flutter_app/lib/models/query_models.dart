@@ -35,10 +35,7 @@ class ParentContext {
   final String text;
   final Map<String, dynamic> metadata;
 
-  ParentContext({
-    required this.text,
-    required this.metadata,
-  });
+  ParentContext({required this.text, required this.metadata});
 
   factory ParentContext.fromJson(Map<String, dynamic> json) {
     return ParentContext(
@@ -52,24 +49,27 @@ class QueryResponse {
   final String query;
   final List<ChunkResult> results;
   final String strategy;
-  final String timestamp;
+  final int totalResults; // 👈 added from backend
+  final Map<String, dynamic>? metrics; // 👈 now a map, optional
 
   QueryResponse({
     required this.query,
     required this.results,
     required this.strategy,
-    required this.timestamp,
+    required this.totalResults,
+    this.metrics,
   });
 
+  
   factory QueryResponse.fromJson(Map<String, dynamic> json) {
     return QueryResponse(
       query: json['query'] ?? '',
       results: (json['results'] as List<dynamic>?)
               ?.map((e) => ChunkResult.fromJson(e as Map<String, dynamic>))
-              .toList() ??
-          [],
+              .toList() ?? [],
       strategy: json['strategy'] ?? '',
-      timestamp: json['timestamp'] ?? '',
+      totalResults: json['total_results'] ?? 0,
+      metrics: json['metrics'] as Map<String, dynamic>?, // may be null
     );
   }
 }
